@@ -17,6 +17,8 @@ unsigned long int avgValue;  //Store the average value of the sensor feedback
 OneWire oneWire(ONE_WIRE_BUS);      
 DallasTemperature sensors(&oneWire); // pass oneWire to DallasTemperature library
 
+time_t t;
+
 float b;
 float tempCelsius; 
 int buf[10],temp;
@@ -28,8 +30,8 @@ String hours;
 String minutes;
 String minutes1;
 
-String (jam);
-String (minit);
+String jam;
+String minit;
 String minit1;
 
 String timer = "";
@@ -38,20 +40,30 @@ String timer1 = "";
 String phstring = "";
 String tempstring = "";
 
+String hari;
+String bulan;
+
+String days;
+String months;
+String years; 
+String date;
+
 const char* address;
 const char* timerjson;
+const char* datejson;
 
 Servo myservo;
 
 int state = 0;
 int state2 = 0;
 int state3 = 0;
+int state4 = 0;
 
 const char* wifiName = "Poco";
 const char* wifiPass = "nafza9494";
 
 //Web Server address to read/write from 
-const char *host = "http://192.168.202.206/testapi/api.php?id=1";
+const char *host = "http://192.168.202.206/testapi/api.php?id=1";  // change your url api
 
 String host2;
 
@@ -86,17 +98,22 @@ void setup() {
 void loop() {
   Readsensor(); 
   getdata();  
-  delay(1000);
+  delay(5000);
   
   display(); 
-  Serial.println(timer);
+  Serial.print("realtimer: ");
+  Serial.print(timer);
+  Serial.print(" date: ");
+  Serial.println(date);
+  Serial.println(hourssenddata);
+  
 
   if (hour(t) == hourssenddata && minute(t) == minutessenddata){
     hourssenddata++;
     senddata();
     }
 
-  if (timer == timerjson){     
+  if (timer == timerjson && date == datejson){     
         if (state == 0){
           state2 = 0;
           Serial.println("servo on");
@@ -176,14 +193,16 @@ void getdata(){
     return;
   }
 
-    address = doc["address"];
-    timerjson = doc["timer"];
+    address = doc["kolam"]; 
+    timerjson = doc["masa"];
+    datejson = doc["tarikh"];
   
   
     // Decode JSON/Extract values
     Serial.println(F("Response:"));
     Serial.println(address);
     Serial.println(timerjson);
+    Serial.println(datejson);
 
   }
   else
@@ -198,19 +217,34 @@ void getdata(){
 void display()
 {
     char buf[40];
-    time_t t = myRTC.get();
-//    sprintf(buf, "%.2d:%.2d ",
-//        hour(t), minute(t));
+    t = myRTC.get();
+
+     days = String(day(t));
+     months = String(month(t));
+     years = String(year(t));
+
+     
     
     if (state3 == 0){
       hourssenddata = hour(t);
       minutessenddata = minute(t);
       state3 = 1;
-      }
+      }  
 
     
     if (hour(t) == 0){
-      hourssenddata =0 ;
+      if(state4 == 0){
+        hourssenddata =0;
+        state4 = 1;
+        }
+      }
+
+    if (hour(t) == 1){
+      state4 = 0;
+      }
+
+    if (hourssenddata == 24){
+      hourssenddata = 0;
       }
 
       
@@ -242,9 +276,25 @@ void display()
     else {
       minit1 = minutes1;
       }
+
+    if (day(t) <= 9){
+      hari = "0" + days;
+      }
+    else {
+      hari = days;
+      }
+
+    if (day(t) <= 9){
+      bulan = "0" + months;
+      }
+    else {
+      bulan = months;
+      }
+    
    
     timer = jam + ":" + minit;
     timer1 = jam + ":" + minit1; 
+    date = years + "-" + bulan + "-" + hari;
     //Serial.println (timer);
     
 }
@@ -287,5 +337,5 @@ void Readsensor(){
   phstring = String(phValue,2);
   tempstring = String(tempCelsius);
 
-  host2 = "http://192.168.202.206/testapi/insertdata.php?ph=" + phstring + "&temp=" + tempstring;
+  host2 = "http://192.168.202.206/testapi/insertdata.php?ph=" + phstring + "&temp=" + tempstring; // change your api url
   }
