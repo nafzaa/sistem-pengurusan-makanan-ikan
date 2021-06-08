@@ -52,6 +52,9 @@ const char* address;
 const char* timerjson;
 const char* datejson;
 
+String jsontimer;
+String jsondate;
+
 Servo myservo;
 
 int state = 0;
@@ -59,11 +62,11 @@ int state2 = 0;
 int state3 = 0;
 int state4 = 0;
 
-const char* wifiName = "Poco";
-const char* wifiPass = "nafza9494";
+const char* wifiName = "Poco"; // your wifi name
+const char* wifiPass = "nafza9494"; //your wifi password
 
 //Web Server address to read/write from 
-const char *host = "http://192.168.202.206/testapi/api.php?id=1";  // change your url api
+const char *host = "http://192.168.202.206/testapi/api.php?id=1";  //change your api url
 
 String host2;
 
@@ -98,22 +101,20 @@ void setup() {
 void loop() {
   Readsensor(); 
   getdata();  
-  delay(5000);
+  delay(2000);
   
   display(); 
   Serial.print("realtimer: ");
   Serial.print(timer);
+  Serial.print(" jsontimer: ");
+  Serial.print(jsontimer);
   Serial.print(" date: ");
-  Serial.println(date);
+  Serial.print(date);
+  Serial.print(" jsondate: ");
+  Serial.println(jsondate);
   Serial.println(hourssenddata);
-  
 
-  if (hour(t) == hourssenddata && minute(t) == minutessenddata){
-    hourssenddata++;
-    senddata();
-    }
-
-  if (timer == timerjson && date == datejson){     
+  if (timer == jsontimer && date == jsondate){     
         if (state == 0){
           state2 = 0;
           Serial.println("servo on");
@@ -128,6 +129,11 @@ void loop() {
   if (timer == timer1){
     Serial.println("update state 0");
     state = 0;
+    }
+
+  if (hour(t) == hourssenddata && minute(t) == minutessenddata){
+    hourssenddata++;
+    senddata();
     }
   
 }
@@ -193,9 +199,12 @@ void getdata(){
     return;
   }
 
-    address = doc["kolam"]; 
-    timerjson = doc["masa"];
-    datejson = doc["tarikh"];
+    address = doc["Kolam"];
+    timerjson = doc["Masa"];
+    datejson = doc["Tarikh"];
+
+    jsontimer = String(timerjson);
+    jsondate = String(datejson);
   
   
     // Decode JSON/Extract values
@@ -337,5 +346,5 @@ void Readsensor(){
   phstring = String(phValue,2);
   tempstring = String(tempCelsius);
 
-  host2 = "http://192.168.202.206/testapi/insertdata.php?ph=" + phstring + "&temp=" + tempstring; // change your api url
+  host2 = "http://192.168.202.206/testapi/insertdata.php?ph=" + phstring + "&temp=" + tempstring; //change your api url
   }
