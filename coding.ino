@@ -293,7 +293,7 @@ void display()
       hari = days;
       }
 
-    if (day(t) <= 9){
+    if (month(t) <= 9){
       bulan = "0" + months;
       }
     else {
